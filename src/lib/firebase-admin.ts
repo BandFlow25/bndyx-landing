@@ -34,37 +34,14 @@ if (!getApps().length) {
 
 // Get Auth and Firestore instances with error handling
 let adminAuth: any, adminDb: any;
+
 try {
   adminAuth = getAuth();
   console.log('Firebase Admin Auth initialized successfully');
 } catch (error) {
   console.error('Error initializing Firebase Admin Auth:', error);
-  // Provide a mock implementation for development
-  if (process.env.NODE_ENV === 'development') {
-    adminAuth = {
-      verifyIdToken: async (token: string) => {
-        console.log('Development mock: verifyIdToken called');
-        // Simple decode without verification
-        const payload = JSON.parse(
-          Buffer.from(token.split('.')[1], 'base64').toString()
-        );
-        return {
-          uid: payload.user_id || payload.sub,
-          email: payload.email
-        };
-      },
-      getUser: async (uid: string) => {
-        console.log('Development mock: getUser called with uid:', uid);
-        return {
-          uid,
-          email: 'dev@example.com',
-          displayName: 'Dev User',
-          photoURL: null
-        };
-      }
-    };
-    console.log('Development mock for Firebase Admin Auth created');
-  }
+  // No mocks - we always want to use real data
+  throw new Error('Failed to initialize Firebase Admin Auth - cannot proceed without proper authentication');
 }
 
 try {
@@ -72,24 +49,8 @@ try {
   console.log('Firebase Admin Firestore initialized successfully');
 } catch (error) {
   console.error('Error initializing Firebase Admin Firestore:', error);
-  // Provide a mock implementation for development
-  if (process.env.NODE_ENV === 'development') {
-    adminDb = {
-      collection: (collectionName: string) => ({
-        doc: (docId: string) => ({
-          get: async () => ({
-            exists: true,
-            data: () => ({
-              roles: ['user', 'live_giggoer', 'GODMODE'], // Default development roles
-              email: 'dev@example.com',
-              displayName: 'Dev User'
-            })
-          })
-        })
-      })
-    };
-    console.log('Development mock for Firebase Admin Firestore created');
-  }
+  // No mocks - we always want to use real data
+  throw new Error('Failed to initialize Firebase Admin Firestore - cannot proceed without database access');
 }
 
 export { adminAuth, adminDb };

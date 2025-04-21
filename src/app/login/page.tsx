@@ -46,22 +46,31 @@ function LoginContent() {
   const [signupError, setSignupError] = useState<string | null>(null);
 
   // Get redirect URL if any
-  const redirectUrl = searchParams.get('returnTo');
-
+  const rawRedirectUrl = searchParams.get('returnTo');
+  
+  // Use the redirect URL exactly as provided by the calling application
+  // No modifications or assumptions about routes
+  const redirectUrl = rawRedirectUrl;
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Signing in with email: ${email}, redirectUrl: ${redirectUrl}`);
+    console.log(`Signing in with email: ${email}, using redirectUrl: ${redirectUrl || 'none'}`);
     
     try {
-      await signIn(email, password, redirectUrl ?? undefined);
+      // Always pass the redirectUrl (which has been modified if it was pointing to dashboard)
+      // Convert null to undefined for TypeScript compatibility
+      await signIn(email, password, redirectUrl || undefined);
+      console.log('Login successful, redirecting to:', redirectUrl || 'no redirect');
       
-      // For same-app redirects, use router.push instead of relying on signIn
-      // to handle the redirect
-      if (redirectUrl && !redirectUrl.includes('://')) {
-        router.push(redirectUrl);
-      } else if (!redirectUrl) {
+      // If no redirect is specified, go to account page
+      if (!redirectUrl) {
         router.push('/account');
       }
+      // For same-app redirects, use router.push
+      else if (!redirectUrl.includes('://')) {
+        router.push(redirectUrl);
+      }
+      // Cross-app redirects are handled by signIn function
     } catch (err) {
       console.error('Login error:', err);
     }

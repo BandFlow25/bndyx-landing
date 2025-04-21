@@ -16,29 +16,36 @@ service cloud.firestore {
       allow read: if true;
     }
     
-  // Add the new bf_venues collection rules
-match /bf_venues/{venueId} {
-  allow read: if true;
-  allow write: if true;  // This makes create, update, and delete all open
-}
+    // Add the new bf_venues collection rules
+    match /bf_venues/{venueId} {
+      allow read: if true;
+      allow write: if true;  // This makes create, update, and delete all open
+    }
 
-// Update bf_nonbands rules 
-match /bf_nonbands/{bandId} {
-  allow read: if true;
-  allow write: if true;  // This makes create, update, and delete all open
-}
-match /bf_artists/{artistId} {
-  allow read: if true;
-  allow write: if true;  // This makes create, update, and delete all open
-}
+    // Update bf_nonbands rules 
+    match /bf_nonbands/{bandId} {
+      allow read: if true;
+      allow write: if true;  // This makes create, update, and delete all open
+    }
+    match /bf_artists/{artistId} {
+      allow read: if true;
+      allow write: if true;  // This makes create, update, and delete all open
+    }
 
-match /bf_events/{eventId} {
-  allow read: if true;
- allow write: if true;
- allow create: if true;
-}
+    match /bf_events/{eventId} {
+      allow read: if true;
+      allow write: if true;
+      allow create: if true;
+    }
 
     
+    // Rules for bndy_artists collection - TEMPORARY WIDE OPEN ACCESS FOR TESTING
+    match /bndy_artists/{artistId} {
+      // WARNING: This rule allows anyone to read/write this collection
+      // This is ONLY for debugging and should be replaced with proper rules
+      allow read, write: if true;
+    }
+
     // Keep all your existing rules for bf_bands
     match /bf_bands/{bandId} {
       allow read: if request.auth != null;

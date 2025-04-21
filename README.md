@@ -2,6 +2,16 @@
 
 Central landing page and authentication hub for the BNDY ecosystem.
 
+## Shared Types
+
+All shared type definitions (such as Artist, ArtistMember, MusicGenre, etc.) are provided by the [bndy-types](../bndy-types) package. **Always import shared types from `bndy-types` and do not duplicate type definitions locally.**
+
+Example usage:
+
+```ts
+import { Artist, ArtistMember } from 'bndy-types';
+```
+
 ## Features
 
 - Landing page with information about BNDY products

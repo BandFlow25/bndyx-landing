@@ -30,7 +30,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BNDY - Keeping Live Music Alive",
+  title: "bndy | Centrestage",
   description: "A community-driven platform for live music discovery and management",
 };
 

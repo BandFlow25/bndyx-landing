@@ -10,6 +10,19 @@ export function AppHeader() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { currentUser, signOut } = useAuth();
   
+  // Helper function to check if user has admin access
+  const hasAdminAccess = () => {
+    if (!currentUser) return false;
+    // Check for admin-like roles or godMode
+    return (
+      currentUser.roles?.some(role => 
+        role.toLowerCase().includes('admin') || 
+        role === 'live_admin'
+      ) || 
+      (currentUser as any).godMode === true
+    );
+  };
+  
   // Debug user roles and godMode status
   useEffect(() => {
     if (currentUser) {
@@ -17,7 +30,8 @@ export function AppHeader() {
         uid: currentUser.uid,
         email: currentUser.email,
         roles: currentUser.roles,
-        godMode: (currentUser as any).godMode
+        godMode: (currentUser as any).godMode,
+        hasAdminAccess: hasAdminAccess()
       });
     }
   }, [currentUser]);
@@ -62,17 +76,19 @@ export function AppHeader() {
 
             {currentUser ? (
               <div className="flex items-center ml-4">
-                {/* Admin icon - always visible for testing */}
-                <Link
-                  href="/admin"
-                  className="flex items-center justify-center mr-3 p-1 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
-                  title="Admin Panel"
-                >
-                  <ShieldCheck 
-                    size={22} 
-                    className="text-orange-500" 
-                  />
-                </Link>
+                {/* Admin icon - only visible for admin users */}
+                {hasAdminAccess() && (
+                  <Link
+                    href="/admin"
+                    className="flex items-center justify-center mr-3 p-1 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
+                    title="Admin Panel"
+                  >
+                    <ShieldCheck 
+                      size={22} 
+                      className="text-orange-500" 
+                    />
+                  </Link>
+                )}
                 <Link
                   href="/account"
                   className="flex items-center justify-center mr-3 p-1 rounded-full bg-slate-100 hover:bg-slate-200 transition-colors"
@@ -150,7 +166,8 @@ export function AppHeader() {
             
             {currentUser ? (
               <>
-                {/* Admin link - always visible for testing */}
+                {/* Admin link - only visible for admin users */}
+                {hasAdminAccess() && (
                   <Link 
                     href="/admin"
                     className="flex items-center px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-orange-500"
@@ -162,6 +179,7 @@ export function AppHeader() {
                     />
                     Admin Panel
                   </Link>
+                )}
                 <Link 
                   href="/account"
                   className="flex items-center px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-orange-500"

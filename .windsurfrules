@@ -108,4 +108,19 @@ This document outlines essential rules and best practices for the local developm
 - **Test authentication flows with test accounts only**
 - **Don't store sensitive user data in local development databases**
 
+1. **Single Auth Context Rule:**  
+   Only use the AuthProvider and useAuth exported from `bndy-ui/components/auth`. Never define or use a local AuthContext, AuthProvider, or useAuth in any consuming app.
+
+2. **No Local Auth Logic:**  
+   Do not duplicate authentication state, token decoding, or user state logic in the app. All such logic must reside in the shared bndy-ui context.
+
+3. **Token Handling:**  
+   The only place the JWT token should be read and processed is inside bndy-ui's AuthProvider. Apps must not manually decode or process the token.
+
+4. **Documentation:**  
+   Any new project or feature that requires authentication must reference and follow the documented Auth Flow in `AUTH_FLOW.md`.
+
+5. **Code Review:**  
+   Code reviewers must reject any PR that introduces a local AuthContext, AuthProvider, or useAuth, or that duplicates authentication logic.
+
 Remember: Local development should prioritize developer productivity while maintaining practices that translate well to production environments.
