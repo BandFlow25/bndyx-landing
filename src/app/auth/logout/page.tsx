@@ -18,8 +18,8 @@ function LogoutContent() {
       // Sign out from Firebase
       await signOut();
       
-      // Clear local storage
-      localStorage.removeItem('bndyAuthToken');
+      // No need to manually clear local storage, signOut handles it
+      // localStorage.removeItem('bndyAuthToken');
       
       // Redirect back to the return URL if provided
       if (returnTo) {
