@@ -2,14 +2,15 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { AuthProvider, useAuth } from 'bndy-ui';
+import { useAuth } from 'bndy-ui';
 import { ShieldCheck, Search, Loader2 } from 'lucide-react';
+import Providers from '../providers';
 
 export default function AdminPage() {
   return (
-    <AuthProvider>
+    <Providers>
       <AdminContent />
-    </AuthProvider>
+    </Providers>
   );
 }
 
@@ -25,14 +26,14 @@ function AdminContent() {
         if (currentUser) {
           // Log user details for debugging
           console.log('Admin page - Current user:', {
-            uid: currentUser.uid,
-            email: currentUser.email,
-            roles: currentUser.roles,
-            godMode: (currentUser as any).godMode
+            uid: currentUser?.uid,
+            email: currentUser?.email,
+            roles: currentUser?.roles,
+            godMode: (currentUser as any)?.godMode
           });
           
           // Check if user has admin access
-          const hasAdminRole = Array.isArray(currentUser.roles) && currentUser.roles.includes('admin' as any);
+          const hasAdminRole = Array.isArray(currentUser?.roles) && currentUser?.roles?.includes('admin' as any);
           const hasGodMode = (currentUser as any).godMode === true;
           
           console.log('Admin access check:', { hasAdminRole, hasGodMode });

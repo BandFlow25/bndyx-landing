@@ -9,7 +9,7 @@ let auth: Auth;
 let firestore: Firestore;
 
 /**
- * Initialize Firebase client SDK for bndy-landing
+ * Initialize Firebase client SDK for bndy-centrestage
  * This ensures we have a single instance of Firebase throughout the application
  */
 export const initializeFirebase = () => {
@@ -24,7 +24,7 @@ export const initializeFirebase = () => {
       appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
     };
     
-    console.log('Initializing Firebase client for bndy-landing');
+    console.log('Initializing Firebase client for bndy-centrestage');
     firebaseApp = initializeApp(firebaseConfig);
   } else {
     firebaseApp = getApps()[0];

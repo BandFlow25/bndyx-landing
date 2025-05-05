@@ -2,14 +2,15 @@
 'use client';
 
 import React from 'react';
-import { AuthProvider, FullFooter, BndyLogo } from 'bndy-ui';
+import { FullFooter, BndyLogo } from 'bndy-ui';
 import { AppHeader } from './components/AppHeader';
 import { Music, MapPin, Calendar, Users, Star, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import Providers from './providers';
 
 export default function Home() {
   return (
-    <AuthProvider>
+    <Providers>
       <main className="min-h-screen flex flex-col">
         <AppHeader />
         
@@ -136,7 +137,7 @@ export default function Home() {
                   </li>
                 </ul>
                 
-                <a href="https://my.bndy.co.uk" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-cyan-500 hover:text-cyan-600 font-medium">
+                <a href="https://backstage.bndy.co.uk" target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-cyan-500 hover:text-cyan-600 font-medium">
                   Manage Your Music
                   <ExternalLink className="w-4 h-4 ml-2" />
                 </a>
@@ -212,6 +213,6 @@ export default function Home() {
         
         <FullFooter badgePath={"/assets/images/BndyBeatBadge.png"} className="mt-auto" />
       </main>
-    </AuthProvider>
+    </Providers>
   );
 }

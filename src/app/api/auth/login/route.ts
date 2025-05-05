@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
+import AUTH_CONFIG from '@/config/auth';
 
 export async function GET(req: NextRequest) {
   // Add performance metrics
@@ -89,26 +90,22 @@ export async function GET(req: NextRequest) {
       }
       
       // OPTIMIZED APPROACH: Fetch roles with better performance
-      // Start with default role
+      // Start with default role - all users get the base 'user' role
       let roles = ['user'];
       let godMode = false;
       
       timeLog('role_check_start');
       
-      // Critical optimization: Check for fast-path first
-      // If this is just a redirect from bndy-ui login, we can use simplified role assignment
-      // to avoid the 10-second delay
+      // Check if this is a redirect from bndy-ui login
       const uidFromParam = searchParams.get('uid');
-      const emailFromParam = searchParams.get('email') || user.email;
       let fastPath = false;
       
-      // Special case for rapid login flow
-      if (uidFromParam && uidFromParam === user.uid && emailFromParam === 'jason@jjones.work') {
-        console.log('FAST_PATH: Detected special user - using optimized flow');
-        roles = ['admin', 'bndy_artist'];
-        godMode = true;
+      // Fast path for verified redirects
+      // This only checks that the UID matches and doesn't assign special privileges
+      if (uidFromParam && uidFromParam === user.uid) {
+        console.log('FAST_PATH: Detected verified redirect - using optimized flow');
         fastPath = true;
-        timeLog('special_user_fast_path');
+        timeLog('fast_path_verified');
       }
       
       if (!fastPath) {
@@ -234,25 +231,54 @@ export async function GET(req: NextRequest) {
         // CRITICAL OPTIMIZATION: Pass token directly in URL without any extra parameters
         // that might trigger unnecessary processing
         timeLog('before_redirect_url_creation');
-        const redirectUrl = new URL(returnTo);
+        let redirectUrl = new URL(returnTo);
         
-        // Force direct home page redirect if going to bndy-core to bypass the intermediate page
-        // This eliminates one redirect step for better performance
-        if (returnTo.includes('localhost:3002') || returnTo.includes('bndy-core')) {
+        // Use our centralized configuration for consistent URL and protocol handling
+        // This ensures we use HTTPS consistently in both development and production
+        if (returnTo.includes('localhost:3002') || 
+            returnTo.includes('bndy-backstage') || 
+            returnTo.includes('backstage.bndy.co.uk')) {
+          
           // Direct to dashboard for faster flow
           if (!returnTo.includes('/dashboard')) {
-            const baseUrl = redirectUrl.origin;
-            redirectUrl.href = `${baseUrl}/dashboard`;
-            console.log('REDIRECT_FLOW: Optimizing redirect path to dashboard');
+            // Use the configured core URL to ensure consistent protocol (HTTPS)
+            redirectUrl = new URL(`${AUTH_CONFIG.urls.core}/dashboard`);
+            console.log('REDIRECT_FLOW: Optimizing redirect path to dashboard using HTTPS');
+          } else {
+            // Ensure we're using HTTPS for the redirect
+            const currentProtocol = redirectUrl.protocol;
+            if (currentProtocol !== 'https:') {
+              console.log(`REDIRECT_FLOW: Upgrading protocol from ${currentProtocol} to https:`);
+              redirectUrl.protocol = 'https:';
+            }
           }
         }
         
-        // Add the token as a query parameter
-        redirectUrl.searchParams.set('token', token);
+        // SECURITY IMPROVEMENT: Instead of passing the full token in the URL,
+        // we'll use a temporary auth code that can be exchanged for the token
+        // This prevents token exposure in the URL, browser history, etc.
         
-        // Log final timings
-        const totalTime = timeLog('redirect_ready');
-        console.log(`REDIRECT_FLOW: Redirecting to ${redirectUrl.toString()} after ${totalTime - startTime}ms`);
+        // Generate a random auth code
+        const authCode = Math.random().toString(36).substring(2, 15) + 
+                        Math.random().toString(36).substring(2, 15);
+        
+        // Initialize the auth code store if it doesn't exist
+        if (typeof global.authCodeStore === 'undefined') {
+          global.authCodeStore = new Map<string, { token: string; expires: number }>();
+        }
+        
+        // Store the token with a configurable expiration
+        const expirationMs = AUTH_CONFIG.authCode.expirationMinutes * 60 * 1000;
+        global.authCodeStore.set(authCode, {
+          token,
+          expires: Date.now() + expirationMs
+        });
+        
+        console.log(`AUTH_FLOW: Generated auth code ${authCode.substring(0, 5)}... for token exchange`);
+        console.log(`AUTH_FLOW: Auth code will expire in ${AUTH_CONFIG.authCode.expirationMinutes} minutes`);
+        
+        // Add the auth code as a query parameter instead of the token
+        redirectUrl.searchParams.set('code', authCode);
         console.log('REDIRECT_FLOW: Timing breakdown:', JSON.stringify(timings));
         
         // Add cache-control headers to prevent browser caching

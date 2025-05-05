@@ -4,20 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import "./theme.css";
 
-// Initialize Firebase
-import { initFirebase } from "bndy-ui";
-
-// Initialize Firebase if environment variables are available
-if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
-  initFirebase({
-    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
-    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || '',
-    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || '',
-    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || '',
-    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || '',
-    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || '',
-  });
-}
+// We'll use the Providers component for client-side initialization
+// instead of directly importing from bndy-ui in this server component
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -44,6 +32,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* We'll let the page components use the Providers component */}
         {children}
       </body>
     </html>

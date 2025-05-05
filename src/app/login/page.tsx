@@ -1,19 +1,20 @@
-//path C:\VSProjects\bndy-landing\src\app\login\page.tsx
+//path C:\VSProjects\bndy-centrestage\src\app\login\page.tsx
 'use client';
 
 import React, { useState, Suspense, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { AuthProvider, BndyLogo, useAuth } from 'bndy-ui';
+import { BndyLogo, useAuth } from 'bndy-ui';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
+import Providers from '../providers';
 
 export default function LoginPage() {
   return (
-    <AuthProvider>
+    <Providers>
       <Suspense fallback={<LoadingState />}>
         <LoginContent />
       </Suspense>
-    </AuthProvider>
+    </Providers>
   );
 }
 
@@ -29,7 +30,7 @@ function LoadingState() {
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { signIn, signUp, signInWithGoogle, signInWithFacebook, isLoading, error } = useAuth();
+  const { signIn, signUp, signInWithGoogle, signInWithFacebook, isLoading, error, getErrorMessage } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,26 +53,34 @@ function LoginContent() {
   // No modifications or assumptions about routes
   const redirectUrl = rawRedirectUrl;
   
+  // Check if we have idToken and state in the URL (for cross-app auth)
+  const idToken = searchParams.get('idToken');
+  const state = searchParams.get('state');
+  const uid = searchParams.get('uid');
+  
+  // If we have all the cross-app auth parameters, handle them
+  useEffect(() => {
+    if (idToken && state && uid && redirectUrl) {
+      console.log('Cross-app auth detected, redirecting to:', redirectUrl);
+      // Redirect to the original application with the token and state
+      const finalRedirectUrl = `${redirectUrl}?idToken=${encodeURIComponent(idToken)}&uid=${encodeURIComponent(uid)}&state=${encodeURIComponent(state)}`;
+      window.location.href = finalRedirectUrl;
+    }
+  }, [idToken, state, uid, redirectUrl]);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(`Signing in with email: ${email}, using redirectUrl: ${redirectUrl || 'none'}`);
-    
     try {
-      // Always pass the redirectUrl (which has been modified if it was pointing to dashboard)
-      // Convert null to undefined for TypeScript compatibility
+      // Pass the redirectUrl to signIn for proper handling
       await signIn(email, password, redirectUrl || undefined);
-      console.log('Login successful, redirecting to:', redirectUrl || 'no redirect');
       
-      // If no redirect is specified, go to account page
-      if (!redirectUrl) {
-        router.push('/account');
-      }
-      // For same-app redirects, use router.push
-      else if (!redirectUrl.includes('://')) {
+      // The redirect will be handled by the AuthContext for cross-app auth
+      // For same-app redirects, we'll handle it here
+      if (redirectUrl && !redirectUrl.includes('://') && !redirectUrl.startsWith('//')) {
         router.push(redirectUrl);
       }
-      // Cross-app redirects are handled by signIn function
     } catch (err) {
+      // Error is already handled by the AuthContext
       console.error('Login error:', err);
     }
   };
@@ -93,26 +102,52 @@ function LoginContent() {
     }
     
     try {
-      console.log(`Creating account for: ${signupEmail}, name: ${fullName}`);
       await signUp(signupEmail, signupPassword, fullName);
-      
-      // Show success message
-      alert("Account created! Please check your email for verification.");
-      
-      // Navigate to account page or switch to login tab
-      router.push('/account');
-    } catch (err: any) {
+      if (redirectUrl) {
+        // For cross-application redirects, use window.location
+        if (redirectUrl.includes('://') || redirectUrl.startsWith('//')) {
+          window.location.href = redirectUrl;
+        } else {
+          // For same-app redirects, use router
+          router.push(redirectUrl);
+        }
+      }
+    } catch (err) {
+      // Error is already handled by the AuthContext
       console.error('Signup error:', err);
-      setSignupError(err.message || "Failed to create account");
     }
   };
 
   const handleGoogleSignIn = async () => {
-    await signInWithGoogle(redirectUrl || undefined);
+    try {
+      // Pass the redirectUrl to signInWithGoogle for proper handling
+      await signInWithGoogle(redirectUrl || undefined);
+      
+      // The redirect will be handled by the AuthContext for cross-app auth
+      // For same-app redirects, we'll handle it here
+      if (redirectUrl && !redirectUrl.includes('://') && !redirectUrl.startsWith('//')) {
+        router.push(redirectUrl);
+      }
+    } catch (err) {
+      // Error is already handled by the AuthContext
+      console.error('Google login error:', err);
+    }
   };
 
   const handleFacebookSignIn = async () => {
-    await signInWithFacebook(redirectUrl || undefined);
+    try {
+      // Pass the redirectUrl to signInWithFacebook for proper handling
+      await signInWithFacebook(redirectUrl || undefined);
+      
+      // The redirect will be handled by the AuthContext for cross-app auth
+      // For same-app redirects, we'll handle it here
+      if (redirectUrl && !redirectUrl.includes('://') && !redirectUrl.startsWith('//')) {
+        router.push(redirectUrl);
+      }
+    } catch (err) {
+      // Error is already handled by the AuthContext
+      console.error('Facebook login error:', err);
+    }
   };
 
   useEffect(() => {
@@ -162,9 +197,9 @@ function LoginContent() {
 
         {activeTab === 'login' ? (
           <>
-            {error && (
+            {(getErrorMessage() || signupError) && (
               <div className="p-3 bg-red-900/30 border border-red-800 rounded-md text-red-400 text-sm mb-4">
-                {error}
+                {signupError || getErrorMessage()}
               </div>
             )}
 
@@ -239,9 +274,9 @@ function LoginContent() {
           </>
         ) : (
           <>
-            {signupError && (
+            {(getErrorMessage() || signupError) && (
               <div className="p-3 bg-red-900/30 border border-red-800 rounded-md text-red-400 text-sm mb-4">
-                {signupError}
+                {signupError || getErrorMessage()}
               </div>
             )}
 

@@ -18,7 +18,7 @@ const nextConfig = {
       };
     }
 
-    // Replace the module resolution for bndy-ui using ESM-compatible syntax
+    // Replace the module resolution for bndy-ui using ESM-compatible syntax 
     config.resolve.alias = {
       ...config.resolve.alias,
       'bndy-ui': path.resolve(__dirname, '../bndy-ui/dist'),

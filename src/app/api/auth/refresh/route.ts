@@ -93,22 +93,6 @@ export async function POST(req: NextRequest) {
       }
     }
     
-    // CRITICAL: Specifically handle the user we're debugging
-    if (decoded.uid === 'dM6oIBS2LFWhi2aH9nMXEDsoCcg1' && decoded.email === 'jason@jjones.work') {
-      console.log('🔥 REFRESH API: SPECIAL OVERRIDE for Jason user detected');
-      roles = ['admin', 'bndy_artist']; // Directly override with known roles from Firebase
-      godMode = true; // Override godMode flag
-      console.log('🔥 REFRESH API: OVERRIDE applied:', { roles, godMode });
-    }
-
-    // CRITICAL: Special case override for Jason's user
-    if (decoded.uid === 'dM6oIBS2LFWhi2aH9nMXEDsoCcg1' && decoded.email === 'jason@jjones.work') {
-      console.log('🔥 REFRESH API: CRITICAL OVERRIDE for Jason user');
-      roles = ['admin', 'bndy_artist']; // Directly override with known roles from Firebase
-      godMode = true; // Override godMode flag
-      console.log('🔥 REFRESH API: OVERRIDE applied:', { roles, godMode });
-    }
-
     // Prepare the token payload
     const tokenPayload = {
       uid: decoded.uid,

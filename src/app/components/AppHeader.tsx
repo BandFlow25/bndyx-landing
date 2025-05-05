@@ -62,7 +62,7 @@ export function AppHeader() {
               Discover
             </Link>
             <Link 
-              href="https://my.bndy.co.uk" 
+              href="https://backstage.bndy.co.uk" 
               className="px-3 py-2 rounded-md text-sm font-medium text-slate-700 hover:text-orange-500"
             >
               Manage
@@ -150,7 +150,7 @@ export function AppHeader() {
               Discover
             </Link>
             <Link 
-              href="https://my.bndy.co.uk" 
+              href="https://backstage.bndy.co.uk" 
               className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-orange-500"
               onClick={() => setIsMenuOpen(false)}
             >

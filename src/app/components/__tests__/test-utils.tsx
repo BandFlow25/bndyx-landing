@@ -1,24 +1,10 @@
 import React, { ReactNode } from 'react';
 import { render, RenderOptions } from '@testing-library/react';
+// Import centralized types from bndy-types
+import type { BndyUser, AuthContextType } from 'bndy-types';
 
-// Define types for our mock
-export interface BndyUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  roles?: string[];
-  godMode?: boolean;
-}
-
-export interface AuthContextType {
-  currentUser: BndyUser | null;
-  isLoading: boolean;
-  signOut: () => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
-  resetPassword: (email: string) => Promise<void>;
-  error: Error | null;
-}
+// Re-export the types for convenience in tests
+export type { BndyUser, AuthContextType };
 
 // Create a mock AuthContext
 export const mockAuthContext: AuthContextType = {

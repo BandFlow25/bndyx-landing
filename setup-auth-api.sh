@@ -250,7 +250,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
 # JWT Configuration
 JWT_SECRET=your_secure_jwt_secret_here
 JWT_EXPIRY=12h
-ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002,https://bndy.live,https://my.bndy.co.uk
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:3002,https://bndy.live,https://backstage.bndy.co.uk
 
 # Firebase Admin (optional for development)
 # FIREBASE_ADMIN_CREDENTIALS={"type":"service_account","project_id":"...","private_key_id":"...","private_key":"...","client_email":"..."}

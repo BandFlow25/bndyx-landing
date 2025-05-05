@@ -3,17 +3,18 @@
 
 import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { AuthProvider, BndyLogo, useAuth } from 'bndy-ui';
+import { BndyLogo, useAuth } from 'bndy-ui';
 import { ArrowLeft, Eye, EyeOff } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Providers from '../providers';
 
 export default function ResetPasswordPage() {
   return (
-    <AuthProvider>
+    <Providers>
       <Suspense fallback={<LoadingState />}>
         <ResetPasswordContent />
       </Suspense>
-    </AuthProvider>
+    </Providers>
   );
 }
 
@@ -29,7 +30,7 @@ function LoadingState() {
 function ResetPasswordContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { resetPassword, confirmReset, isLoading, error } = useAuth();
+  const { resetPassword, confirmReset, isLoading, error, getErrorMessage } = useAuth();
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,6 +49,7 @@ function ResetPasswordContent() {
       await resetPassword(email);
       setResetSent(true);
     } catch (err) {
+      // Error is already handled by the AuthContext
       console.error('Error sending reset email:', err);
     }
   };
@@ -72,6 +74,7 @@ function ResetPasswordContent() {
       await confirmReset(oobCode!, password);
       router.push('/login');
     } catch (err) {
+      // Error is already handled by the AuthContext
       console.error('Error resetting password:', err);
     }
   };
@@ -94,7 +97,7 @@ function ResetPasswordContent() {
           </h1>
           
           <div className="w-48 md:w-64 mx-auto mb-8">
-            <BndyLogo className="w-full h-auto" color="#f97316" />
+            <BndyLogo className="w-full h-auto" color="#f97316" holeColor="#1e293b" />
           </div>
           
           {resetSent ? (
@@ -117,9 +120,9 @@ function ResetPasswordContent() {
             </div>
           ) : (
             <form onSubmit={handleResetRequest} className="space-y-4">
-              {error && (
+              {getErrorMessage() && (
                 <div className="p-3 bg-red-900/30 border border-red-800 rounded-md text-red-400 text-sm">
-                  {error}
+                  {getErrorMessage()}
                 </div>
               )}
               
@@ -186,9 +189,9 @@ function ResetPasswordContent() {
         </div>
         
         <form onSubmit={handlePasswordReset} className="space-y-4">
-          {(error || passwordError) && (
+          {(getErrorMessage() || passwordError) && (
             <div className="p-3 bg-red-900/30 border border-red-800 rounded-md text-red-400 text-sm">
-              {passwordError || error}
+              {passwordError || getErrorMessage()}
             </div>
           )}
           

@@ -1,9 +1,10 @@
-//C:\VSProjects\bndy-landing\src\app\auth\logout\page.tsx
+//C:\VSProjects\bndy-centrestage\src\app\auth\logout\page.tsx
 'use client';
 
 import { useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { AuthProvider, useAuth } from 'bndy-ui';
+import { useAuth } from 'bndy-ui';
+import Providers from '../../providers';
 
 // Separate the content into its own component that uses the hook
 function LogoutContent() {
@@ -42,11 +43,11 @@ function LogoutContent() {
   );
 }
 
-// Main component that wraps the content with the AuthProvider
+// Main component that wraps the content with the Providers
 export default function LogoutPage() {
   return (
-    <AuthProvider>
+    <Providers>
       <LogoutContent />
-    </AuthProvider>
+    </Providers>
   );
 }

@@ -1,4 +1,4 @@
-// server.mjs
+// server.mjs - HTTPS server for bndy-centrestage local development
 import { createServer } from 'https';
 import { parse } from 'url';
 import next from 'next';

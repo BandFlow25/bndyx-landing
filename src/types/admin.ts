@@ -1,17 +1,10 @@
 // src/types/admin.ts
 // Simple type definitions for admin functionality
 
-// Define the user type based on the Firestore structure
-export interface FirestoreUser {
-  id: string;
-  email: string;
-  displayName: string;
-  fullName?: string;
-  createdAt?: string | { seconds: number; nanoseconds: number };
-  godMode?: boolean;
-  hasProfile?: boolean;
-  instruments?: string[];
-  postcode?: string;
-  roles?: string[];
-  avatar?: string;
-}
+// Import centralized types from bndy-types
+import { FirestoreUser as SharedFirestoreUser } from 'bndy-types';
+
+// Re-export the FirestoreUser type from bndy-types
+export type FirestoreUser = SharedFirestoreUser;
+
+// Add any admin-specific types below that aren't part of the shared types

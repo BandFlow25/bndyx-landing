@@ -1,12 +1,10 @@
 import React from 'react';
+import { BndyUser as BndyTypesUser, UserRole } from 'bndy-types';
 
 // Define the types for our mocked components and hooks
-export interface BndyUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  roles?: string[];
-  godMode?: boolean;
+// Extend the BndyUser type from bndy-types for testing purposes
+export interface BndyUser extends BndyTypesUser {
+  godMode?: boolean; // Additional property for testing
 }
 
 export interface AuthContextType {
@@ -28,7 +26,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 // Mock the BndyLogo component
-export const BndyLogo: React.FC<{ className?: string }> = ({ className }) => {
+export const BndyLogo: React.FC<{ className?: string; holeColor?: string }> = ({ className, holeColor }) => {
   return <div data-testid="bndy-logo" className={className}>BndyLogo</div>;
 };
 

@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { AuthProvider, useAuth } from 'bndy-ui';
+import { useAuth } from 'bndy-ui';
 import { useRouter } from 'next/navigation';
+import Providers from '../../providers';
 import { 
   Users, Search, Loader2, CheckCircle, XCircle, 
   ChevronDown, ChevronUp, RefreshCw, Save
@@ -30,9 +31,9 @@ const availableRoles: AdminRole[] = [
 
 export default function UserManagementPage() {
   return (
-    <AuthProvider>
+    <Providers>
       <UserManagementContent />
-    </AuthProvider>
+    </Providers>
   );
 }
 
@@ -59,14 +60,14 @@ function UserManagementContent() {
         if (currentUser) {
           // Log user details for debugging
           console.log('Users page - Current user:', {
-            uid: currentUser.uid,
-            email: currentUser.email,
-            roles: currentUser.roles,
-            godMode: (currentUser as any).godMode
+            uid: currentUser?.uid,
+            email: currentUser?.email,
+            roles: currentUser?.roles,
+            godMode: (currentUser as any)?.godMode
           });
           
           // Check if user has admin access
-          const hasAdminRole = Array.isArray(currentUser.roles) && currentUser.roles.includes('admin' as any);
+          const hasAdminRole = Array.isArray(currentUser?.roles) && currentUser?.roles?.includes('admin' as any);
           const hasGodMode = (currentUser as any).godMode === true;
           
           console.log('Admin access check:', { hasAdminRole, hasGodMode });
@@ -171,45 +172,36 @@ function UserManagementContent() {
   };
 
   const saveUserRoles = async (userId: string) => {
-    if (!selectedRoles[userId]) {
-      console.error('Cannot save roles: no roles selected');
-      return;
-    }
+    if (!selectedRoles[userId]) return;
     
     setIsSaving({ ...isSaving, [userId]: true });
     setSaveSuccess({ ...saveSuccess, [userId]: false });
     
     try {
-      const userRef = doc(db, 'bf_users', userId);
+      // Get the roles from the selected state
+      const roles = selectedRoles[userId];
       
-      await updateDoc(userRef, {
-        roles: selectedRoles[userId]
-      });
+      // Get Firestore reference
+      const userRef = doc(getFirebaseFirestore(), 'bf_users', userId);
       
-      // Update local state
-      const updatedUsers = users.map(user => {
-        if (user.id === userId) {
-          return { ...user, roles: selectedRoles[userId] };
-        }
-        return user;
-      });
+      // Update the roles field
+      await updateDoc(userRef, { roles });
       
-      setUsers(updatedUsers);
-      setFilteredUsers(updatedUsers.filter(user => 
-        user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email?.toLowerCase().includes(searchQuery.toLowerCase())
+      // Update the local state
+      setUsers(users.map(user => 
+        user.id === userId ? { ...user, roles } : user
       ));
       
+      // Set success state
       setSaveSuccess({ ...saveSuccess, [userId]: true });
       
-      // Reset success message after 3 seconds
+      // Clear success after 3 seconds
       setTimeout(() => {
         setSaveSuccess(prev => ({ ...prev, [userId]: false }));
       }, 3000);
-      
-    } catch (err) {
-      console.error('Error updating user roles:', err);
-      alert('Failed to update user roles. Please try again.');
+    } catch (error) {
+      console.error('Error updating user roles:', error);
+      setError(`Failed to update roles: ${(error as any).message}`);
     } finally {
       setIsSaving({ ...isSaving, [userId]: false });
     }

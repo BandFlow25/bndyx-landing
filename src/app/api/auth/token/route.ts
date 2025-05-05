@@ -3,24 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import jwt from 'jsonwebtoken';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
-// Type definitions
-interface FirestoreUserData {
-  roles?: string[] | string | Record<string, boolean>;
-  godMode?: boolean;
-  displayName?: string;
-  photoURL?: string;
-  [key: string]: any;
-}
-
-interface TokenPayload {
-  uid: string;
-  email: string | null;
-  roles: string[];
-  displayName?: string | null;
-  photoURL?: string | null;
-  godMode: boolean;
-  [key: string]: any;
-}
+// Import centralized types from bndy-types
+import type { FirestoreUserData, TokenPayload, UserRole } from 'bndy-types';
 
 /**
  * Helper function to create a token payload with proper types
@@ -40,19 +24,19 @@ async function createTokenPayload(
   trackTime('start');
   
   // Default values
-  let roles: string[] = ['user'];
+  let roles: UserRole[] = ['user' as UserRole];
   let godMode = false;
   
-  // CRITICAL: Direct override for Jason's account
-  if (forceOverride || (user.uid === 'dM6oIBS2LFWhi2aH9nMXEDsoCcg1' && user.email === 'jason@jjones.work')) {
-    console.log('AUTH_FLOW: Using direct override for special account');
-    const payload = {
+  // Skip special case handling - all users should go through the standard flow
+  if (forceOverride) {
+    console.log('AUTH_FLOW: Force override requested - skipping standard flow');
+    const payload: TokenPayload = {
       uid: user.uid,
       email: user.email,
-      roles: ['admin', 'bndy_artist'],
-      displayName: user.displayName || 'JayDrums',
+      roles: roles, // Use default roles
+      displayName: user.displayName,
       photoURL: user.photoURL,
-      godMode: true
+      godMode: false // No special privileges by default
     };
     console.log(`AUTH_FLOW: Override completed in ${trackTime('override_complete')}ms`);
     return payload;
@@ -71,13 +55,14 @@ async function createTokenPayload(
       // Process roles
       if (userData.roles) {
         if (Array.isArray(userData.roles)) {
-          roles = userData.roles.map(r => typeof r === 'string' ? r : String(r));
+          // Convert string roles to UserRole type
+          roles = userData.roles.map(r => typeof r === 'string' ? r as UserRole : String(r) as UserRole);
         } else if (typeof userData.roles === 'string') {
-          roles = [userData.roles];
+          roles = [userData.roles as UserRole];
         } else if (typeof userData.roles === 'object' && userData.roles !== null) {
           // Fixed type issue - ensure we're dealing with a Record<string, boolean>
           const roleObj = userData.roles as Record<string, boolean>;
-          roles = Object.keys(roleObj).filter(k => roleObj[k] === true);
+          roles = Object.keys(roleObj).filter(k => roleObj[k] === true).map(r => r as UserRole);
         }
       }
       
@@ -86,7 +71,7 @@ async function createTokenPayload(
         godMode = true;
       }
       
-      const payload = {
+      const payload: TokenPayload = {
         uid: user.uid,
         email: user.email,
         roles,
@@ -107,11 +92,11 @@ async function createTokenPayload(
   return {
     uid: user.uid,
     email: user.email,
-    roles,
+    roles, // Already typed as UserRole[] from the default value
     displayName: user.displayName || null,
     photoURL: user.photoURL || null,
     godMode
-  };
+  } as TokenPayload;
 }
 
 export async function POST(req: NextRequest) {
@@ -169,14 +154,9 @@ export async function POST(req: NextRequest) {
       godMode: tokenPayload.godMode
     });
     
-    // CRITICAL - Triple confirm the special case for Jason's user account
-    if (user.uid === 'dM6oIBS2LFWhi2aH9nMXEDsoCcg1' && user.email === 'jason@jjones.work') {
-      console.log('🔥 TOKEN API: ⚠️⚠️⚠️ CRITICAL OVERRIDE ⚠️⚠️⚠️');
-      // Force override the token payload after creation
-      tokenPayload.roles = ['admin', 'bndy_artist'];
-      tokenPayload.godMode = true;
-      console.log('🔥 TOKEN API: Final payload after critical override:', tokenPayload);
-    }
+    // No special case handling - roles should be determined by database
+    // Log the final token payload for debugging
+    console.log('TOKEN API: Final payload:', tokenPayload);
 
     console.log('AUTH_FLOW: Payload ready, creating JWT token');
     

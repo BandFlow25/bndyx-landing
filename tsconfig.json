@@ -22,7 +22,9 @@
 "paths": {
   "@/*": ["./src/*"],
   "bndy-ui": ["../bndy-ui/dist"],
-  "bndy-ui/*": ["../bndy-ui/dist/*"]
+  "bndy-ui/*": ["../bndy-ui/dist/*"],
+  "bndy-types": ["../bndy-types/lib"],
+  "bndy-types/*": ["../bndy-types/lib/*"]
 }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "next.config.mjs"],
